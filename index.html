@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizMaster Pro - Interactive Quiz Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+</head>
+<body>
+    <!-- Preloader -->
+    <div class="preloader" id="preloader">
+        <div class="preloader-content">
+            <div class="preloader-brain"></div>
+            <h1 class="preloader-title">QuizMaster Pro</h1>
+            <p class="preloader-subtitle">Loading your quiz experience...</p>
+            <div class="preloader-spinner"></div>
+            <div class="preloader-dots">
+                <div class="preloader-dot"></div>
+                <div class="preloader-dot"></div>
+                <div class="preloader-dot"></div>
+            </div>
+        </div>
+    </div>
+
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="quiz-container" id="main-content">
+        <div class="quiz-header">
+            <h1 class="quiz-title">
+                <i class="fas fa-brain"></i> QuizMaster Pro
+            </h1>
+            <p class="quiz-subtitle">Test your knowledge with our interactive quiz platform</p>
+        </div>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text">
+                <span id="current-question">Question 1</span>
+                <span id="total-questions">of 1</span>
+            </div>
+        </div>
+
+        <div class="question-container" id="question-container" role="main" aria-live="polite">
+            <div class="question-card">
+                <h2 class="question-text" id="question" aria-label="Quiz question">Loading question...</h2>
+                <fieldset class="options-container" id="options-container" aria-labelledby="question">
+                    <legend class="sr-only">Choose your answer</legend>
+                    <!-- Options will be loaded here -->
+                </fieldset>
+            </div>
+            <button class="submit-btn" id="submit-btn" disabled aria-describedby="submit-help">
+                <span id="submit-text">Select an answer</span>
+                <span class="loading-spinner" id="loading-spinner" style="display: none;" aria-hidden="true"></span>
+            </button>
+            <div id="submit-help" class="sr-only">Press Enter or click to submit your selected answer</div>
+        </div>
+
+        <div class="result-container" id="result-container" role="alert" aria-live="assertive">
+            <div class="result-icon" id="result-icon" aria-hidden="true">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="result-text" id="result-text">Great job!</div>
+            <div class="result-explanation" id="result-explanation">
+                You got the correct answer!
+            </div>
+        </div>
+    </div>
+
+    <!-- Confetti Animation (will be added via JS) -->
+    <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000;"></canvas>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        // Simple Quiz Application
+        let currentQuestion = null;
+        let selectedOption = null;
+
+        function loadQuestion() {
+            console.log('Loading question...');
+
+            // Show loading state
+            $('#question').text('Loading question...');
+            $('#options-container').empty();
+            $('#submit-btn').prop('disabled', true).find('#submit-text').text('Loading...');
+
+            $.ajax({
+                url: 'fetch_question.php',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    displayQuestion(data);
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText,
+                        statusCode: xhr.status
+                    });
+
+                    $('#question').html(`
+                        <div style="text-align: center; color: #ef4444;">
+                            <i class="fas fa-exclamation-triangle"></i><br>
+                            Failed to load question: ${error}<br>
+                            <small>Status: ${status} (${xhr.status})</small>
+                        </div>
+                    `);
+
+                    $('#options-container').html(`
+                        <div style="text-align: center; padding: 20px;">
+                            <button onclick="location.reload()" class="submit-btn" style="width: auto; margin: 0;">
+                                <i class="fas fa-refresh"></i> Try Again
+                            </button>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        function displayQuestion(data) {
+            currentQuestion = data;
+
+            // Display question
+            $('#question').text(data.question.question);
+
+            // Display options
+            const optionsContainer = $('#options-container');
+            optionsContainer.empty();
+
+            data.options.forEach((option, index) => {
+                const optionHtml = `
+                    <div class="option" data-value="${option.option_content}" tabindex="0">
+                        <div class="option-content">
+                            <div class="option-indicator"></div>
+                            <span class="option-text">${option.option_content}</span>
+                        </div>
+                    </div>
+                `;
+                optionsContainer.append(optionHtml);
+            });
+
+            // Reset selection
+            selectedOption = null;
+            $('#submit-btn').prop('disabled', true).find('#submit-text').text('Select an answer');
+        }
+
+        function selectOption($option) {
+            // Remove previous selection
+            $('.option').removeClass('selected');
+
+            // Add selection to clicked option
+            $option.addClass('selected');
+
+            // Update selected option value
+            selectedOption = $option.data('value');
+
+            // Enable submit button
+            $('#submit-btn').prop('disabled', false).find('#submit-text').text('Submit Answer');
+        }
+
+        function submitAnswer() {
+            if (!selectedOption) return;
+
+            // Trim both values and compare (case-sensitive)
+            const userAnswer = selectedOption.trim();
+            const correctAnswer = currentQuestion.question.answer.trim();
+            const isCorrect = userAnswer === correctAnswer;
+
+            // Debug logging (remove in production)
+            if (window.location.hostname === 'localhost') {
+                console.log('Answer Comparison:', {
+                    userAnswer: userAnswer,
+                    correctAnswer: correctAnswer,
+                    isCorrect: isCorrect
+                });
+            }
+
+            // Show result
+            showResult(isCorrect);
+
+            // Trigger confetti for correct answers
+            if (isCorrect && typeof confetti !== 'undefined') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#667eea', '#764ba2', '#f093fb', '#f5576c']
+                });
+            }
+        }
+
+        function showResult(isCorrect) {
+            const resultContainer = $('#result-container');
+            const resultIcon = $('#result-icon');
+            const resultText = $('#result-text');
+            const resultExplanation = $('#result-explanation');
+
+            // Hide question container
+            $('#question-container').fadeOut(400);
+
+            // Configure result display
+            if (isCorrect) {
+                resultIcon.html('<i class="fas fa-check-circle"></i>').removeClass('incorrect').addClass('correct');
+                resultText.text('Excellent!').removeClass('incorrect').addClass('correct');
+                resultExplanation.html(`
+                    <strong>Correct!</strong><br>
+                    The answer is: <em>${currentQuestion.question.answer}</em>
+                `);
+            } else {
+                resultIcon.html('<i class="fas fa-times-circle"></i>').removeClass('correct').addClass('incorrect');
+                resultText.text('Not quite right').removeClass('correct').addClass('incorrect');
+                resultExplanation.html(`
+                    <strong>The correct answer is:</strong><br>
+                    <em>${currentQuestion.question.answer}</em><br>
+                    <small>You selected: ${selectedOption}</small>
+                `);
+            }
+
+            // Show result with animation
+            setTimeout(() => {
+                resultContainer.fadeIn(600);
+            }, 500);
+
+            // Auto-hide result and load new question after 4 seconds
+            setTimeout(() => {
+                resultContainer.fadeOut(400);
+                $('#question-container').fadeIn(600);
+                loadQuestion();
+            }, 4000);
+        }
+
+        // Event handlers
+        $(document).on('click', '.option', function() {
+            selectOption($(this));
+        });
+
+        $('#submit-btn').on('click', function() {
+            submitAnswer();
+        });
+
+        // Keyboard support
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Enter' && selectedOption) {
+                submitAnswer();
+            }
+        });
+
+        // Preloader functions
+        function hidePreloader() {
+            const preloader = document.getElementById('preloader');
+            preloader.classList.add('fade-out');
+            setTimeout(() => {
+                preloader.style.display = 'none';
+            }, 500);
+        }
+
+        // Initialize quiz
+        $(document).ready(function() {
+
+            // Hide quiz container initially
+            $('.quiz-container').hide();
+
+            // Simulate loading time and hide preloader
+            setTimeout(() => {
+                hidePreloader();
+                $('.quiz-container').fadeIn(800);
+                loadQuestion();
+            }, 2000); // Show preloader for 2 seconds
+        });
+    </script>
+</body>
+</html>
+
