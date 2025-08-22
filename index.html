@@ -76,6 +76,252 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
+        // Quiz questions data - moved from PHP to JavaScript for Netlify compatibility
+        const quizQuestions = [
+            // Geography Questions
+            {
+                'question': 'What is the capital of France?',
+                'answer': 'Paris',
+                'options': ['London', 'Berlin', 'Paris', 'Madrid']
+            },
+            {
+                'question': 'Which country has the most natural lakes?',
+                'answer': 'Canada',
+                'options': ['Russia', 'Canada', 'Finland', 'Sweden']
+            },
+            {
+                'question': 'What is the smallest country in the world?',
+                'answer': 'Vatican City',
+                'options': ['Monaco', 'San Marino', 'Vatican City', 'Liechtenstein']
+            },
+            {
+                'question': 'Which river is the longest in the world?',
+                'answer': 'Nile River',
+                'options': ['Amazon River', 'Nile River', 'Mississippi River', 'Yangtze River']
+            },
+            {
+                'question': 'Mount Everest is located in which mountain range?',
+                'answer': 'Himalayas',
+                'options': ['Andes', 'Rocky Mountains', 'Alps', 'Himalayas']
+            },
+
+            // Science Questions
+            {
+                'question': 'Which planet is known as the Red Planet?',
+                'answer': 'Mars',
+                'options': ['Venus', 'Mars', 'Jupiter', 'Saturn']
+            },
+            {
+                'question': 'What is the chemical symbol for gold?',
+                'answer': 'Au',
+                'options': ['Go', 'Gd', 'Au', 'Ag']
+            },
+            {
+                'question': 'How many bones are there in an adult human body?',
+                'answer': '206',
+                'options': ['196', '206', '216', '226']
+            },
+            {
+                'question': 'What gas makes up about 78% of Earth\'s atmosphere?',
+                'answer': 'Nitrogen',
+                'options': ['Oxygen', 'Carbon Dioxide', 'Nitrogen', 'Argon']
+            },
+            {
+                'question': 'What is the speed of light in vacuum?',
+                'answer': '299,792,458 m/s',
+                'options': ['299,792,458 m/s', '300,000,000 m/s', '186,000 m/s', '150,000,000 m/s']
+            },
+
+            // Mathematics Questions
+            {
+                'question': 'What is 2 + 2?',
+                'answer': '4',
+                'options': ['3', '4', '5', '6']
+            },
+            {
+                'question': 'What is the value of π (pi) to 2 decimal places?',
+                'answer': '3.14',
+                'options': ['3.12', '3.14', '3.16', '3.18']
+            },
+            {
+                'question': 'What is 15% of 200?',
+                'answer': '30',
+                'options': ['25', '30', '35', '40']
+            },
+            {
+                'question': 'What is the square root of 144?',
+                'answer': '12',
+                'options': ['10', '11', '12', '13']
+            },
+            {
+                'question': 'In a right triangle, what is the longest side called?',
+                'answer': 'Hypotenuse',
+                'options': ['Adjacent', 'Opposite', 'Hypotenuse', 'Base']
+            },
+
+            // History Questions
+            {
+                'question': 'In which year did World War II end?',
+                'answer': '1945',
+                'options': ['1944', '1945', '1946', '1947']
+            },
+            {
+                'question': 'Who was the first person to walk on the moon?',
+                'answer': 'Neil Armstrong',
+                'options': ['Buzz Aldrin', 'Neil Armstrong', 'John Glenn', 'Alan Shepard']
+            },
+            {
+                'question': 'The ancient city of Troy was located in which modern-day country?',
+                'answer': 'Turkey',
+                'options': ['Greece', 'Italy', 'Turkey', 'Egypt']
+            },
+            {
+                'question': 'Which empire was ruled by Julius Caesar?',
+                'answer': 'Roman Empire',
+                'options': ['Greek Empire', 'Roman Empire', 'Persian Empire', 'Egyptian Empire']
+            },
+            {
+                'question': 'The Berlin Wall fell in which year?',
+                'answer': '1989',
+                'options': ['1987', '1988', '1989', '1990']
+            },
+
+            // Art & Literature Questions
+            {
+                'question': 'Who painted the Mona Lisa?',
+                'answer': 'Leonardo da Vinci',
+                'options': ['Pablo Picasso', 'Vincent van Gogh', 'Leonardo da Vinci', 'Michelangelo']
+            },
+            {
+                'question': 'Who wrote the novel "1984"?',
+                'answer': 'George Orwell',
+                'options': ['Aldous Huxley', 'George Orwell', 'Ray Bradbury', 'H.G. Wells']
+            },
+            {
+                'question': 'Which artist cut off his own ear?',
+                'answer': 'Vincent van Gogh',
+                'options': ['Pablo Picasso', 'Vincent van Gogh', 'Claude Monet', 'Salvador Dalí']
+            },
+            {
+                'question': 'Who composed "The Four Seasons"?',
+                'answer': 'Antonio Vivaldi',
+                'options': ['Johann Bach', 'Wolfgang Mozart', 'Antonio Vivaldi', 'Ludwig Beethoven']
+            },
+            {
+                'question': 'Which Shakespeare play features the characters Romeo and Juliet?',
+                'answer': 'Romeo and Juliet',
+                'options': ['Hamlet', 'Macbeth', 'Romeo and Juliet', 'Othello']
+            },
+
+            // Technology & Programming Questions
+            {
+                'question': 'Which programming language is known as the "language of the web"?',
+                'answer': 'JavaScript',
+                'options': ['Python', 'Java', 'JavaScript', 'C++']
+            },
+            {
+                'question': 'What does "HTML" stand for?',
+                'answer': 'HyperText Markup Language',
+                'options': ['High Tech Modern Language', 'HyperText Markup Language', 'Home Tool Markup Language', 'Hyperlink and Text Markup Language']
+            },
+            {
+                'question': 'Who founded Microsoft?',
+                'answer': 'Bill Gates',
+                'options': ['Steve Jobs', 'Bill Gates', 'Mark Zuckerberg', 'Larry Page']
+            },
+            {
+                'question': 'What does "AI" stand for in technology?',
+                'answer': 'Artificial Intelligence',
+                'options': ['Automated Intelligence', 'Artificial Intelligence', 'Advanced Intelligence', 'Algorithmic Intelligence']
+            },
+            {
+                'question': 'Which company developed the iPhone?',
+                'answer': 'Apple',
+                'options': ['Samsung', 'Google', 'Apple', 'Microsoft']
+            },
+
+            // Sports Questions
+            {
+                'question': 'How many players are on a basketball team on the court at one time?',
+                'answer': '5',
+                'options': ['4', '5', '6', '7']
+            },
+            {
+                'question': 'In which sport would you perform a slam dunk?',
+                'answer': 'Basketball',
+                'options': ['Volleyball', 'Basketball', 'Tennis', 'Baseball']
+            },
+            {
+                'question': 'How often are the Summer Olympic Games held?',
+                'answer': 'Every 4 years',
+                'options': ['Every 2 years', 'Every 3 years', 'Every 4 years', 'Every 5 years']
+            },
+            {
+                'question': 'Which country has won the most FIFA World Cups?',
+                'answer': 'Brazil',
+                'options': ['Germany', 'Argentina', 'Brazil', 'Italy']
+            },
+            {
+                'question': 'In golf, what is the term for one stroke under par?',
+                'answer': 'Birdie',
+                'options': ['Eagle', 'Birdie', 'Bogey', 'Albatross']
+            },
+
+            // Nature & Animals Questions
+            {
+                'question': 'What is the largest ocean on Earth?',
+                'answer': 'Pacific Ocean',
+                'options': ['Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean', 'Pacific Ocean']
+            },
+            {
+                'question': 'Which animal is known as the "King of the Jungle"?',
+                'answer': 'Lion',
+                'options': ['Tiger', 'Lion', 'Elephant', 'Leopard']
+            },
+            {
+                'question': 'How many hearts does an octopus have?',
+                'answer': '3',
+                'options': ['1', '2', '3', '4']
+            },
+            {
+                'question': 'Which bird is known for its ability to mimic human speech?',
+                'answer': 'Parrot',
+                'options': ['Crow', 'Parrot', 'Eagle', 'Owl']
+            },
+            {
+                'question': 'What is the fastest land animal?',
+                'answer': 'Cheetah',
+                'options': ['Lion', 'Horse', 'Cheetah', 'Gazelle']
+            },
+
+            // Food & Culture Questions
+            {
+                'question': 'Which spice is derived from the Crocus flower?',
+                'answer': 'Saffron',
+                'options': ['Turmeric', 'Saffron', 'Paprika', 'Cinnamon']
+            },
+            {
+                'question': 'What is the main ingredient in guacamole?',
+                'answer': 'Avocado',
+                'options': ['Tomato', 'Avocado', 'Lime', 'Onion']
+            },
+            {
+                'question': 'Which country is famous for inventing pizza?',
+                'answer': 'Italy',
+                'options': ['France', 'Italy', 'Greece', 'Spain']
+            },
+            {
+                'question': 'What type of pastry is used to make profiteroles?',
+                'answer': 'Choux pastry',
+                'options': ['Puff pastry', 'Shortcrust pastry', 'Choux pastry', 'Filo pastry']
+            },
+            {
+                'question': 'Which tea is known for its distinctive smoky flavor?',
+                'answer': 'Lapsang Souchong',
+                'options': ['Earl Grey', 'English Breakfast', 'Lapsang Souchong', 'Darjeeling']
+            }
+        ];
+
         // Simple Quiz Application
         let currentQuestion = null;
         let selectedOption = null;
@@ -88,38 +334,55 @@
             $('#options-container').empty();
             $('#submit-btn').prop('disabled', true).find('#submit-text').text('Loading...');
 
-            $.ajax({
-                url: 'fetch_question.php',
-                method: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    displayQuestion(data);
+            // Use local question data instead of AJAX call
+            try {
+                const questionData = getRandomQuestion();
+                displayQuestion(questionData);
+            } catch (error) {
+                console.error('Error loading question:', error);
+                
+                $('#question').html(`
+                    <div style="text-align: center; color: #ef4444;">
+                        <i class="fas fa-exclamation-triangle"></i><br>
+                        Failed to load question: ${error.message}<br>
+                    </div>
+                `);
+
+                $('#options-container').html(`
+                    <div style="text-align: center; padding: 20px;">
+                        <button onclick="location.reload()" class="submit-btn" style="width: auto; margin: 0;">
+                            <i class="fas fa-refresh"></i> Try Again
+                        </button>
+                    </div>
+                `);
+            }
+        }
+
+        function getRandomQuestion() {
+            const randomIndex = Math.floor(Math.random() * quizQuestions.length);
+            const selectedQuestion = quizQuestions[randomIndex];
+            
+            // Format the response to match the expected structure from PHP
+            return {
+                'success': true,
+                'question': {
+                    'id': randomIndex + 1,
+                    'question': selectedQuestion.question.trim(),
+                    'answer_type': 'text',
+                    'answer': selectedQuestion.answer.trim()
                 },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', {
-                        status: status,
-                        error: error,
-                        responseText: xhr.responseText,
-                        statusCode: xhr.status
-                    });
-
-                    $('#question').html(`
-                        <div style="text-align: center; color: #ef4444;">
-                            <i class="fas fa-exclamation-triangle"></i><br>
-                            Failed to load question: ${error}<br>
-                            <small>Status: ${status} (${xhr.status})</small>
-                        </div>
-                    `);
-
-                    $('#options-container').html(`
-                        <div style="text-align: center; padding: 20px;">
-                            <button onclick="location.reload()" class="submit-btn" style="width: auto; margin: 0;">
-                                <i class="fas fa-refresh"></i> Try Again
-                            </button>
-                        </div>
-                    `);
+                'options': selectedQuestion.options.map((option, index) => ({
+                    'id': index + 1,
+                    'option_type': 'text',
+                    'option_content': option.trim()
+                })),
+                'metadata': {
+                    'total_options': selectedQuestion.options.length,
+                    'fetched_at': new Date().toISOString(),
+                    'question_id': randomIndex + 1,
+                    'source': 'local_questions'
                 }
-            });
+            };
         }
 
         function displayQuestion(data) {
